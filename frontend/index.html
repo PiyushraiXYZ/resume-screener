@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Case File — Resume Screener</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1C2333;
+    --paper:#F4EFE1;
+    --manila:#D8C39A;
+    --manila-dark:#C2A876;
+    --stamp-red:#A33B33;
+    --stamp-green:#4B7357;
+    --graphite:#2E2A24;
+    --graphite-soft:#5b5445;
+    --thread:#8a7a55;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--ink);
+    background-image:
+      radial-gradient(circle at 15% 20%, rgba(255,255,255,0.03), transparent 40%),
+      radial-gradient(circle at 85% 80%, rgba(255,255,255,0.025), transparent 40%);
+    font-family:'Source Serif 4', serif;
+    color:var(--graphite);
+    min-height:100vh;
+    padding:40px 20px 80px;
+  }
+  .desk{
+    max-width:980px;
+    margin:0 auto;
+  }
+  header.masthead{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    border-bottom:2px solid var(--manila);
+    padding-bottom:18px;
+    margin-bottom:28px;
+  }
+  header.masthead h1{
+    font-family:'Special Elite', cursive;
+    color:var(--paper);
+    font-size:28px;
+    letter-spacing:1px;
+    margin:0;
+  }
+  header.masthead .case-no{
+    font-family:'IBM Plex Mono', monospace;
+    color:var(--manila);
+    font-size:13px;
+    letter-spacing:2px;
+  }
+  .folder{
+    background:var(--manila);
+    border-radius:4px 4px 2px 2px;
+    box-shadow:0 20px 50px rgba(0,0,0,0.45);
+    position:relative;
+    padding:0;
+    overflow:hidden;
+  }
+  .folder-tab{
+    display:flex;
+  }
+  .tab-btn{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    background:var(--manila-dark);
+    color:var(--graphite-soft);
+    border:none;
+    padding:12px 22px;
+    cursor:pointer;
+    border-right:1px solid rgba(0,0,0,0.1);
+    transition:background .15s ease, color .15s ease;
+  }
+  .tab-btn.active{
+    background:var(--paper);
+    color:var(--graphite);
+    font-weight:600;
+  }
+  .sheet{
+    background:var(--paper);
+    padding:32px 36px 40px;
+    background-image:repeating-linear-gradient(
+      to bottom,
+      transparent,
+      transparent 27px,
+      rgba(90,80,60,0.06) 28px
+    );
+  }
+  .field-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--graphite-soft);
+    display:block;
+    margin-bottom:8px;
+  }
+  .row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:28px;
+    margin-bottom:22px;
+  }
+  @media (max-width:720px){ .row{grid-template-columns:1fr;} }
+
+  .dropzone{
+    border:2px dashed var(--manila-dark);
+    border-radius:2px;
+    background:rgba(255,255,255,0.35);
+    padding:20px;
+    text-align:center;
+    cursor:pointer;
+    transition:border-color .15s ease, background .15s ease;
+    min-height:96px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+  }
+  .dropzone:hover, .dropzone.dragover{
+    border-color:var(--stamp-red);
+    background:rgba(163,59,51,0.06);
+  }
+  .dropzone .hint{ font-size:13px; color:var(--graphite-soft); }
+  .dropzone .files{ font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--ink); word-break:break-all; }
+  input[type=file]{ display:none; }
+
+  textarea, .skills-input{
+    width:100%;
+    border:1px solid var(--manila-dark);
+    background:rgba(255,255,255,0.5);
+    border-radius:2px;
+    padding:12px;
+    font-family:'Source Serif 4', serif;
+    font-size:14px;
+    color:var(--graphite);
+    resize:vertical;
+  }
+  .skills-input{ font-family:'IBM Plex Mono', monospace; font-size:13px; }
+
+  .jd-toggle{ display:flex; gap:14px; margin-bottom:10px; font-family:'IBM Plex Mono', monospace; font-size:12px; }
+  .jd-toggle label{ cursor:pointer; color:var(--graphite-soft); }
+  .jd-toggle input{ margin-right:5px; }
+
+  .submit-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-top:10px;
+    flex-wrap:wrap;
+    gap:12px;
+  }
+  button.stamp-btn{
+    font-family:'Special Elite', cursive;
+    font-size:16px;
+    letter-spacing:1px;
+    background:var(--stamp-red);
+    color:var(--paper);
+    border:none;
+    padding:14px 30px;
+    border-radius:2px;
+    cursor:pointer;
+    box-shadow:0 4px 0 rgba(0,0,0,0.25);
+    transition:transform .08s ease;
+  }
+  button.stamp-btn:hover{ transform:translateY(1px); box-shadow:0 3px 0 rgba(0,0,0,0.25); }
+  button.stamp-btn:disabled{ opacity:0.5; cursor:not-allowed; }
+  .status-line{ font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--graphite-soft); }
+  .error-line{ color:var(--stamp-red); font-family:'IBM Plex Mono', monospace; font-size:13px; margin-top:10px; }
+
+  /* Results */
+  .results{ margin-top:36px; }
+  .case-record{
+    background:var(--paper);
+    border:1px solid var(--manila-dark);
+    border-radius:2px;
+    padding:26px 30px;
+    position:relative;
+    margin-bottom:24px;
+    box-shadow:0 8px 20px rgba(0,0,0,0.25);
+  }
+  .stamp{
+    position:absolute;
+    top:20px;
+    right:26px;
+    border:4px double;
+    padding:8px 16px;
+    font-family:'Special Elite', cursive;
+    font-size:20px;
+    letter-spacing:2px;
+    transform:rotate(-8deg);
+    opacity:0.9;
+    border-radius:4px;
+  }
+  .stamp.rec{ color:var(--stamp-green); border-color:var(--stamp-green); }
+  .stamp.notrec{ color:var(--stamp-red); border-color:var(--stamp-red); }
+
+  .candidate-name{ font-size:22px; font-weight:700; margin:0 0 2px; }
+  .candidate-meta{ font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--graphite-soft); margin-bottom:18px; }
+
+  .score-grid{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:14px;
+    margin:18px 0 20px;
+  }
+  @media (max-width:640px){ .score-grid{grid-template-columns:repeat(2,1fr);} }
+  .score-cell{
+    background:rgba(90,80,60,0.06);
+    border-left:3px solid var(--manila-dark);
+    padding:10px 12px;
+  }
+  .score-cell .val{ font-family:'IBM Plex Mono', monospace; font-size:20px; font-weight:600; }
+  .score-cell .lbl{ font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--graphite-soft); }
+
+  .prob-bar-wrap{ margin:18px 0 22px; }
+  .prob-bar-track{ height:10px; background:rgba(0,0,0,0.1); border-radius:5px; overflow:hidden; }
+  .prob-bar-fill{ height:100%; background:linear-gradient(90deg, var(--stamp-red), var(--stamp-green)); transition:width .6s ease; }
+  .prob-label{ font-family:'IBM Plex Mono', monospace; font-size:12px; margin-top:6px; color:var(--graphite-soft); }
+
+  .chip-section{ margin-top:14px; }
+  .chip-section .field-label{ margin-bottom:8px; }
+  .chips{ display:flex; flex-wrap:wrap; gap:8px; }
+  .chip{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    padding:5px 10px;
+    border-radius:2px;
+    border:1px solid;
+  }
+  .chip.matched{ color:var(--stamp-green); border-color:var(--stamp-green); background:rgba(75,115,87,0.08); }
+  .chip.missing{ color:var(--stamp-red); border-color:var(--stamp-red); background:rgba(163,59,51,0.08); }
+
+  .preview{
+    margin-top:18px;
+    font-size:13px;
+    color:var(--graphite-soft);
+    background:rgba(0,0,0,0.03);
+    padding:10px 12px;
+    border-radius:2px;
+    white-space:pre-wrap;
+    max-height:100px;
+    overflow:hidden;
+  }
+
+  .rank-index{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--paper);
+    background:var(--ink);
+    display:inline-block;
+    padding:2px 8px;
+    border-radius:2px;
+    margin-bottom:10px;
+  }
+
+  footer.note{
+    text-align:center;
+    color:var(--manila);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    margin-top:40px;
+    opacity:0.6;
+  }
+
+  .config-line{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    justify-content:flex-end;
+    margin-bottom:14px;
+  }
+  .config-line input{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    background:transparent;
+    border:none;
+    border-bottom:1px dashed var(--manila);
+    color:var(--manila);
+    width:220px;
+    padding:2px 4px;
+  }
+  .config-line label{ font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--manila); }
+</style>
+</head>
+<body>
+<div class="desk">
+
+  <header class="masthead">
+    <h1>&#128193; Case File — Resume Screener</h1>
+    <span class="case-no">FILE NO. <span id="caseNo"></span></span>
+  </header>
+
+  <div class="config-line">
+    <label for="apiBase">API base &rarr;</label>
+    <input id="apiBase" type="text" value="http://localhost:8000" />
+  </div>
+
+  <div class="folder">
+    <div class="folder-tab">
+      <button class="tab-btn active" data-mode="analyze">Single Candidate</button>
+      <button class="tab-btn" data-mode="rank">Rank Multiple</button>
+    </div>
+
+    <div class="sheet">
+      <div class="row">
+        <div>
+          <span class="field-label" id="resumeLabel">Resume (PDF)</span>
+          <div class="dropzone" id="resumeDropzone">
+            <div class="hint">Drop PDF here or click to browse</div>
+            <div class="files" id="resumeFiles"></div>
+          </div>
+          <input type="file" id="resumeInput" accept="application/pdf" />
+        </div>
+
+        <div>
+          <span class="field-label">Job Description</span>
+          <div class="jd-toggle">
+            <label><input type="radio" name="jdmode" value="file" checked /> Upload PDF</label>
+            <label><input type="radio" name="jdmode" value="text" /> Paste text</label>
+          </div>
+          <div class="dropzone" id="jdDropzone">
+            <div class="hint">Drop PDF here or click to browse</div>
+            <div class="files" id="jdFiles"></div>
+          </div>
+          <input type="file" id="jdInput" accept="application/pdf" />
+          <textarea id="jdTextArea" rows="4" placeholder="Paste the job description text here..." style="display:none;"></textarea>
+        </div>
+      </div>
+
+      <div class="row" style="grid-template-columns:1fr;">
+        <div>
+          <span class="field-label">Custom skill list (optional, comma-separated — leave blank for default)</span>
+          <input class="skills-input" id="skillsInput" type="text" placeholder="python, django, sql, fastapi, react..." />
+        </div>
+      </div>
+
+      <div class="submit-row">
+        <button class="stamp-btn" id="submitBtn">Open Case &amp; Analyze</button>
+        <span class="status-line" id="statusLine"></span>
+      </div>
+      <div class="error-line" id="errorLine"></div>
+    </div>
+  </div>
+
+  <div class="results" id="results"></div>
+
+  <footer class="note">Built from your Main.py / Main.ipynb prototype · FastAPI backend + logistic regression scoring</footer>
+</div>
+
+<script>
+const state = { mode: 'analyze', resumeFiles: [], jdFile: null };
+
+document.getElementById('caseNo').textContent =
+  Math.floor(100000 + Math.random()*899999);
+
+// --- Tabs ---
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    state.mode = btn.dataset.mode;
+    document.getElementById('resumeLabel').textContent =
+      state.mode === 'rank' ? 'Resumes (PDF, multiple allowed)' : 'Resume (PDF)';
+    document.getElementById('resumeInput').multiple = state.mode === 'rank';
+    document.getElementById('submitBtn').textContent =
+      state.mode === 'rank' ? 'Open Case & Rank All' : 'Open Case & Analyze';
+    document.getElementById('results').innerHTML = '';
+  });
+});
+
+// --- Dropzone wiring ---
+function wireDropzone(zoneId, inputId, onFiles){
+  const zone = document.getElementById(zoneId);
+  const input = document.getElementById(inputId);
+  zone.addEventListener('click', ()=> input.click());
+  input.addEventListener('change', ()=> onFiles(input.files));
+  ['dragenter','dragover'].forEach(evt=>
+    zone.addEventListener(evt, e=>{ e.preventDefault(); zone.classList.add('dragover'); }));
+  ['dragleave','drop'].forEach(evt=>
+    zone.addEventListener(evt, e=>{ e.preventDefault(); zone.classList.remove('dragover'); }));
+  zone.addEventListener('drop', e=>{
+    input.files = e.dataTransfer.files;
+    onFiles(input.files);
+  });
+}
+
+wireDropzone('resumeDropzone', 'resumeInput', (files)=>{
+  state.resumeFiles = Array.from(files);
+  document.getElementById('resumeFiles').textContent =
+    state.resumeFiles.map(f=>f.name).join(', ');
+});
+
+wireDropzone('jdDropzone', 'jdInput', (files)=>{
+  state.jdFile = files[0] || null;
+  document.getElementById('jdFiles').textContent = state.jdFile ? state.jdFile.name : '';
+});
+
+// --- JD mode toggle ---
+document.querySelectorAll('input[name=jdmode]').forEach(r=>{
+  r.addEventListener('change', ()=>{
+    const isText = document.querySelector('input[name=jdmode]:checked').value === 'text';
+    document.getElementById('jdDropzone').style.display = isText ? 'none' : 'flex';
+    document.getElementById('jdTextArea').style.display = isText ? 'block' : 'none';
+  });
+});
+
+// --- Submit ---
+document.getElementById('submitBtn').addEventListener('click', async ()=>{
+  const errorLine = document.getElementById('errorLine');
+  const statusLine = document.getElementById('statusLine');
+  const resultsEl = document.getElementById('results');
+  errorLine.textContent = '';
+  resultsEl.innerHTML = '';
+
+  const apiBase = document.getElementById('apiBase').value.replace(/\/$/, '');
+  const jdIsText = document.querySelector('input[name=jdmode]:checked').value === 'text';
+  const jdText = document.getElementById('jdTextArea').value.trim();
+  const skills = document.getElementById('skillsInput').value.trim();
+
+  if (state.resumeFiles.length === 0){
+    errorLine.textContent = 'Attach at least one resume PDF before opening the case.';
+    return;
+  }
+  if (jdIsText && !jdText){
+    errorLine.textContent = 'Paste the job description text, or switch to Upload PDF.';
+    return;
+  }
+  if (!jdIsText && !state.jdFile){
+    errorLine.textContent = 'Attach the job description PDF, or switch to Paste text.';
+    return;
+  }
+
+  const form = new FormData();
+  if (state.mode === 'analyze'){
+    form.append('resume', state.resumeFiles[0]);
+  } else {
+    state.resumeFiles.forEach(f => form.append('resumes', f));
+  }
+  if (jdIsText) form.append('jd_text', jdText);
+  else form.append('jd_file', state.jdFile);
+  if (skills) form.append('skills', skills);
+
+  const endpoint = state.mode === 'analyze' ? '/api/analyze' : '/api/rank';
+
+  document.getElementById('submitBtn').disabled = true;
+  statusLine.textContent = 'Reviewing documents...';
+
+  try{
+    const resp = await fetch(apiBase + endpoint, { method:'POST', body:form });
+    if (!resp.ok){
+      const err = await resp.json().catch(()=>({detail:'Request failed'}));
+      throw new Error(err.detail || `Request failed with ${resp.status}`);
+    }
+    const data = await resp.json();
+    statusLine.textContent = 'Case closed.';
+    if (state.mode === 'analyze') renderSingle(data);
+    else renderRank(data);
+  } catch(e){
+    errorLine.textContent = e.message.includes('Failed to fetch')
+      ? `Could not reach the API at ${apiBase}. Is the backend running?`
+      : e.message;
+    statusLine.textContent = '';
+  } finally {
+    document.getElementById('submitBtn').disabled = false;
+  }
+});
+
+function chipRow(label, matched, missing){
+  return `
+    <div class="chip-section">
+      <span class="field-label">${label}</span>
+      <div class="chips">
+        ${matched.map(s=>`<span class="chip matched">&#10003; ${s}</span>`).join('')}
+        ${missing.map(s=>`<span class="chip missing">&#10007; ${s}</span>`).join('')}
+      </div>
+    </div>`;
+}
+
+function recordHTML(result, rankBadge=''){
+  const stampClass = result.ml_verdict === 'Recommended' ? 'rec' : 'notrec';
+  const stampText = result.ml_verdict === 'Recommended' ? 'RECOMMENDED' : 'NOT RECOMMENDED';
+  const c = result.candidate || {};
+  const pct = Math.round(result.ml_probability * 100);
+  return `
+    <div class="case-record">
+      <div class="stamp ${stampClass}">${stampText}</div>
+      ${rankBadge}
+      <p class="candidate-name">${c.name || 'Unnamed Candidate'}</p>
+      <p class="candidate-meta">${c.email || 'no email found'} &nbsp;·&nbsp; ${c.phone || 'no phone found'}</p>
+
+      <div class="score-grid">
+        <div class="score-cell"><div class="val">${result.breakdown.skill_score}</div><div class="lbl">Skill match</div></div>
+        <div class="score-cell"><div class="val">${result.breakdown.education_score}</div><div class="lbl">Education</div></div>
+        <div class="score-cell"><div class="val">${result.breakdown.experience_score}</div><div class="lbl">Experience</div></div>
+        <div class="score-cell"><div class="val">${result.breakdown.project_score}</div><div class="lbl">Projects</div></div>
+      </div>
+
+      <div class="prob-bar-wrap">
+        <div class="prob-bar-track"><div class="prob-bar-fill" style="width:${pct}%"></div></div>
+        <div class="prob-label">Model confidence: ${pct}% fit</div>
+      </div>
+
+      ${chipRow('Skills', result.skills.matched_skills, result.skills.missing_skills)}
+      ${result.resume_preview ? `<div class="preview">${result.resume_preview}</div>` : ''}
+    </div>`;
+}
+
+function renderSingle(data){
+  document.getElementById('results').innerHTML = recordHTML(data);
+}
+
+function renderRank(data){
+  const el = document.getElementById('results');
+  let html = `<p class="status-line" style="margin-bottom:14px;">
+    Required skills detected in JD: ${data.jd_required_skills.join(', ') || 'none matched from list'}
+  </p>`;
+  data.ranked.forEach((r, i)=>{
+    const badge = `<span class="rank-index">#${i+1} — ${r.filename}</span><br/>`;
+    html += recordHTML(r, badge);
+  });
+  if (data.ranked.length === 0){
+    html += `<p class="error-line">No resumes could be read.</p>`;
+  }
+  el.innerHTML = html;
+}
+</script>
+</body>
+</html>
